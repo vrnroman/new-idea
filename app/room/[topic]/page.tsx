@@ -2,7 +2,7 @@ import { sendMessage } from '@/app/actions';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import ReactMarkdown from 'react-markdown';
+import RoomMessages from './RoomMessages';
 
 export const revalidate = 0; // Ensure fresh data on every request
 
@@ -57,66 +57,11 @@ export default async function RoomPage({ params }: PageProps) {
       </header>
 
       {/* Messages List (Scrollable) */}
-      <div className="flex-1 overflow-y-auto space-y-6 mb-6 px-2">
-        {messages && messages.length > 0 ? (
-          messages.map((msg) => (
-            <div key={msg.id} className="group">
-              <div className="flex items-baseline justify-between mb-1">
-                 <span className="text-xs text-gray-400">
-                    {new Date(msg.created_at).toLocaleString()}
-                 </span>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg dark:bg-zinc-900/50">
-                {msg.file_url && (
-                  <div className="mb-4">
-                    {msg.file_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={msg.file_url}
-                        alt="Attachment"
-                        className="max-h-[300px] w-auto rounded-lg"
-                      />
-                    ) : (
-                      <a
-                        href={msg.file_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-blue-600 hover:underline"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="w-5 h-5"
-                        >
-                          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                          <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                        Download Attachment
-                      </a>
-                    )}
-                  </div>
-                )}
-                {msg.content && (
-                  <article className="prose prose-sm dark:prose-invert max-w-none">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
-                  </article>
-                )}
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="text-center text-gray-500 py-20 italic">
-            No messages yet. Be the first to say something!
-          </div>
-        )}
-      </div>
+      <RoomMessages
+        initialMessages={messages || []}
+        roomId={room.id}
+        topic={room.topic}
+      />
 
       {/* Input Area (Fixed at bottom) */}
       <div className="shrink-0 pt-4 border-t border-gray-200 dark:border-zinc-800 bg-background">
