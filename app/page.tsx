@@ -1,6 +1,7 @@
 import { createRoom } from './actions';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import { SubmitButton } from './components/SubmitButton';
 
 export const revalidate = 0; // Ensure fresh data on every request
 
@@ -37,12 +38,12 @@ export default async function Home() {
                 className="w-full rounded-md border border-gray-300 p-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
               />
             </div>
-            <button
-              type="submit"
+            <SubmitButton
               className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
+              pendingText="Creating..."
             >
               Create New Room
-            </button>
+            </SubmitButton>
           </form>
         </section>
 
@@ -73,12 +74,12 @@ export default async function Home() {
                 className="w-full rounded-md border border-gray-300 p-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
               />
             </div>
-            <button
-              type="submit"
+            <SubmitButton
               className="w-full rounded-md bg-zinc-800 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+              pendingText="Joining..."
             >
               Join Room
-            </button>
+            </SubmitButton>
           </form>
         </section>
       </div>
