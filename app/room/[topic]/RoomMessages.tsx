@@ -24,6 +24,16 @@ export default function RoomMessages({ initialMessages, roomId }: RoomMessagesPr
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   // Use a ref to keep track of the latest messages state for the polling interval
   const messagesRef = useRef<Message[]>(initialMessages);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: isInitialMount.current ? 'auto' : 'smooth' });
+      isInitialMount.current = false;
+    }
+  }, [messages]);
 
   // Sync state with props (e.g., after sending a message which triggers server revalidation)
   useEffect(() => {
@@ -130,6 +140,7 @@ export default function RoomMessages({ initialMessages, roomId }: RoomMessagesPr
             No messages yet. Be the first to say something!
           </div>
         )}
+        <div ref={bottomRef} />
       </div>
   );
 }
