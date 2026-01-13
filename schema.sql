@@ -4,7 +4,7 @@ create extension if not exists "pgcrypto";
 -- Create rooms table
 create table if not exists rooms (
   id uuid primary key default gen_random_uuid(),
-  topic text,
+  topic text not null unique,
   created_at timestamp with time zone default now()
 );
 
