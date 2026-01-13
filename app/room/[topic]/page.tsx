@@ -66,9 +66,49 @@ export default async function RoomPage({ params }: PageProps) {
                     {new Date(msg.created_at).toLocaleString()}
                  </span>
               </div>
-              <article className="prose prose-sm dark:prose-invert max-w-none bg-gray-50 p-4 rounded-lg dark:bg-zinc-900/50">
-                <ReactMarkdown>{msg.content}</ReactMarkdown>
-              </article>
+              <div className="bg-gray-50 p-4 rounded-lg dark:bg-zinc-900/50">
+                {msg.file_url && (
+                  <div className="mb-4">
+                    {msg.file_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={msg.file_url}
+                        alt="Attachment"
+                        className="max-h-[300px] w-auto rounded-lg"
+                      />
+                    ) : (
+                      <a
+                        href={msg.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-blue-600 hover:underline"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="w-5 h-5"
+                        >
+                          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                          <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                        Download Attachment
+                      </a>
+                    )}
+                  </div>
+                )}
+                {msg.content && (
+                  <article className="prose prose-sm dark:prose-invert max-w-none">
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </article>
+                )}
+              </div>
             </div>
           ))
         ) : (
@@ -81,24 +121,25 @@ export default async function RoomPage({ params }: PageProps) {
       {/* Input Area (Fixed at bottom) */}
       <div className="shrink-0 pt-4 border-t border-gray-200 dark:border-zinc-800 bg-background">
         <form
-          action={async (formData) => {
-            'use server';
-            await sendMessage(room.id, room.topic, formData.get('content') as string);
-          }}
+          action={sendMessage.bind(null, room.id, room.topic)}
           className="flex flex-col gap-2"
         >
           <textarea
             name="content"
-            required
             placeholder="Type your message here (Markdown supported)..."
             className="w-full h-32 p-4 rounded-lg border border-gray-300 resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-zinc-800 dark:border-zinc-700"
           />
-          <button
-            type="submit"
-            className="self-end px-6 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-500"
-          >
-            Send Message
-          </button>
+          <div className="flex justify-between items-center">
+            <label className="cursor-pointer text-gray-500 hover:text-blue-600 flex items-center gap-2">
+              <input type="file" name="file" className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/20 dark:file:text-blue-400" />
+            </label>
+            <button
+              type="submit"
+              className="px-6 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-500"
+            >
+              Send Message
+            </button>
+          </div>
         </form>
       </div>
     </div>
