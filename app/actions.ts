@@ -106,3 +106,19 @@ export async function sendMessage(roomId: string, content: string) {
 
   revalidatePath(`/room/${roomId}`);
 }
+
+export async function getNewMessages(roomId: string, lastMessageId: number) {
+  const { data: messages, error } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('room_id', roomId)
+    .gt('id', lastMessageId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching new messages:', error);
+    return [];
+  }
+
+  return messages;
+}
