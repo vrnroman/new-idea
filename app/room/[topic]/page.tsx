@@ -7,17 +7,18 @@ import ReactMarkdown from 'react-markdown';
 export const revalidate = 0; // Ensure fresh data on every request
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ topic: string }>;
 }
 
 export default async function RoomPage({ params }: PageProps) {
-  const { id } = await params;
+  const { topic } = await params;
+  const decodedTopic = decodeURIComponent(topic);
 
   // 1. Fetch Room Details
   const { data: room, error: roomError } = await supabase
     .from('rooms')
     .select('*')
-    .eq('id', id)
+    .eq('topic', decodedTopic)
     .single();
 
   if (roomError || !room) {
@@ -28,7 +29,7 @@ export default async function RoomPage({ params }: PageProps) {
   const { data: messages } = await supabase
     .from('messages')
     .select('*')
-    .eq('room_id', id)
+    .eq('room_id', room.id)
     .order('created_at', { ascending: true });
 
   return (
@@ -36,7 +37,7 @@ export default async function RoomPage({ params }: PageProps) {
       {/* Header */}
       <header className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-zinc-800 shrink-0">
         <div>
-          <h1 className="text-2xl font-bold truncate">{room.topic || 'Untitled Room'}</h1>
+          <h1 className="text-2xl font-bold truncate">{room.topic}</h1>
           <p className="text-xs text-gray-500 font-mono">{room.id}</p>
         </div>
         <div className="flex gap-2">
@@ -47,7 +48,7 @@ export default async function RoomPage({ params }: PageProps) {
             Home
           </Link>
           <a
-            href={`/room/${id}`} // Simple refresh
+            href={`/room/${topic}`} // Simple refresh
             className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30"
           >
             Refresh
@@ -82,7 +83,7 @@ export default async function RoomPage({ params }: PageProps) {
         <form
           action={async (formData) => {
             'use server';
-            await sendMessage(id, formData.get('content') as string);
+            await sendMessage(room.id, room.topic, formData.get('content') as string);
           }}
           className="flex flex-col gap-2"
         >

@@ -7,6 +7,11 @@ import { redirect } from 'next/navigation';
 export async function createRoom(formData: FormData) {
   const topic = formData.get('topic') as string | null;
 
+  if (!topic || !topic.trim()) {
+    throw new Error('Topic is required');
+  }
+  const cleanTopic = topic.trim();
+
   // 1. Check total number of rooms
   const { count, error: countError } = await supabase
     .from('rooms')
@@ -43,20 +48,25 @@ export async function createRoom(formData: FormData) {
   // 3. Create the new room
   const { data: newRoom, error: createError } = await supabase
     .from('rooms')
-    .insert([{ topic: topic || 'Untitled Room' }])
+    .insert([{ topic: cleanTopic }])
     .select()
     .single();
 
   if (createError) {
+    if (createError.code === '23505') {
+      // Topic already exists, just redirect to it
+      revalidatePath('/');
+      redirect(`/room/${encodeURIComponent(cleanTopic)}`);
+    }
     console.error('Error creating room:', createError);
     throw new Error('Failed to create room');
   }
 
   revalidatePath('/');
-  redirect(`/room/${newRoom.id}`);
+  redirect(`/room/${encodeURIComponent(newRoom.topic)}`);
 }
 
-export async function sendMessage(roomId: string, content: string) {
+export async function sendMessage(roomId: string, topic: string, content: string) {
   if (!content.trim()) return;
 
   // 1. Check message count for the current room_id
@@ -104,5 +114,5 @@ export async function sendMessage(roomId: string, content: string) {
     throw new Error('Failed to send message');
   }
 
-  revalidatePath(`/room/${roomId}`);
+  revalidatePath(`/room/${encodeURIComponent(topic)}`);
 }

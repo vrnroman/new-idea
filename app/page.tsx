@@ -26,12 +26,13 @@ export default async function Home() {
           <form action={createRoom} className="space-y-4">
             <div>
               <label htmlFor="topic" className="block text-sm font-medium mb-1">
-                Topic (Optional)
+                Topic (Required)
               </label>
               <input
                 type="text"
                 name="topic"
                 id="topic"
+                required
                 placeholder="e.g. Project Ideas"
                 className="w-full rounded-md border border-gray-300 p-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
               />
@@ -45,34 +46,30 @@ export default async function Home() {
           </form>
         </section>
 
-        {/* Join by ID Section */}
+        {/* Join by Topic Section */}
         <section className="space-y-4 bg-gray-50 p-6 rounded-lg border border-gray-200 dark:bg-zinc-900 dark:border-zinc-800">
-          <h2 className="text-xl font-semibold">Join by ID</h2>
+          <h2 className="text-xl font-semibold">Join by Topic</h2>
           <form
             action={async (formData) => {
               'use server';
-              const id = formData.get('roomId');
-              if (id) {
-                 // In server component we can't use router.push, so we use redirect
-                 // But this is inside a form action, so it works.
-                 // However, we need to import redirect.
+              const topic = formData.get('topic') as string;
+              if (topic && topic.trim()) {
                  const { redirect } = await import('next/navigation');
-                 redirect(`/room/${id}`);
+                 redirect(`/room/${encodeURIComponent(topic.trim())}`);
               }
             }}
             className="space-y-4"
           >
             <div>
-              <label htmlFor="roomId" className="block text-sm font-medium mb-1">
-                Room ID (UUID)
+              <label htmlFor="topic" className="block text-sm font-medium mb-1">
+                Topic
               </label>
               <input
                 type="text"
-                name="roomId"
-                id="roomId"
+                name="topic"
+                id="topic"
                 required
-                pattern="^[0-9a-fA-F-]{36}$"
-                placeholder="Paste UUID here..."
+                placeholder="Enter exact topic..."
                 className="w-full rounded-md border border-gray-300 p-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
               />
             </div>
@@ -94,7 +91,7 @@ export default async function Home() {
             {recentRooms.map((room) => (
               <Link
                 key={room.id}
-                href={`/room/${room.id}`}
+                href={`/room/${encodeURIComponent(room.topic || '')}`}
                 className="block p-4 rounded-lg border border-gray-200 hover:border-blue-500 transition-colors dark:border-zinc-800 dark:hover:border-blue-500"
               >
                 <div className="flex justify-between items-center">
