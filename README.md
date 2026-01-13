@@ -7,6 +7,8 @@ A lightweight, anonymous text-sharing application built with Next.js and Supabas
 - **Anonymous Rooms**: Create rooms instantly with an optional topic.
 - **Auto-Cleanup**: The system maintains a maximum of 20 rooms. Oldest rooms are deleted automatically when new ones are created.
 - **Message Limits**: Each room holds a maximum of 500 messages. Oldest messages are deleted automatically when new ones are sent.
+- **File Attachments**: Upload images and files with your messages. Images are displayed inline; other files are downloadable.
+- **Storage Cleanup**: File attachments are automatically deleted from storage when their associated messages are removed.
 - **Markdown Support**: Messages are rendered using Markdown.
 - **No Sign-up**: Completely anonymous and open.
 
@@ -38,6 +40,7 @@ node scripts/migrate.js
 1. Copy the contents of the `schema.sql` file in this repository.
 2. Go to your Supabase Dashboard -> **SQL Editor**.
 3. Paste the SQL and click **Run**.
+4. **Note**: The SQL script also configures the `room-uploads` Storage bucket and its public access policies.
 
 ### 3. Run Locally
 
