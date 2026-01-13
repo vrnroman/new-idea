@@ -13,7 +13,9 @@ create table if not exists messages (
   id bigint generated always as identity primary key,
   room_id uuid references rooms(id) on delete cascade not null,
   content text not null,
-  created_at timestamp with time zone default now()
+  created_at timestamp with time zone default now(),
+  file_url text,
+  file_path text
 );
 
 -- Indexes for performance (optional but good practice)
@@ -24,3 +26,25 @@ create index if not exists idx_messages_created_at on messages(created_at);
 -- Disable RLS for simple anonymous access as requested
 alter table rooms disable row level security;
 alter table messages disable row level security;
+
+-- Storage Setup (if running in an environment that supports storage.buckets management via SQL)
+-- Note: Supabase Storage schemas might not be fully manageable via standard SQL migration depending on permissions,
+-- but this covers the intent.
+insert into storage.buckets (id, name, public)
+values ('room-uploads', 'room-uploads', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Public Access" on storage.objects;
+create policy "Public Access"
+  on storage.objects for select
+  using ( bucket_id = 'room-uploads' );
+
+drop policy if exists "Public Insert" on storage.objects;
+create policy "Public Insert"
+  on storage.objects for insert
+  with check ( bucket_id = 'room-uploads' );
+
+drop policy if exists "Public Delete" on storage.objects;
+create policy "Public Delete"
+  on storage.objects for delete
+  using ( bucket_id = 'room-uploads' );

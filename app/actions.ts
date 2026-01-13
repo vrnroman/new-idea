@@ -66,10 +66,40 @@ export async function createRoom(formData: FormData) {
   redirect(`/room/${encodeURIComponent(newRoom.topic)}`);
 }
 
-export async function sendMessage(roomId: string, topic: string, content: string) {
-  if (!content.trim()) return;
+export async function sendMessage(roomId: string, topic: string, formData: FormData) {
+  const content = formData.get('content') as string;
+  const file = formData.get('file') as File | null;
 
-  // 1. Check message count for the current room_id
+  if ((!content || !content.trim()) && (!file || file.size === 0)) return;
+
+  let fileUrl: string | null = null;
+  let filePath: string | null = null;
+
+  // 1. Handle File Upload
+  if (file && file.size > 0) {
+    // Sanitize filename and create a unique path
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+    const path = `${roomId}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('room-uploads')
+      .upload(path, file);
+
+    if (uploadError) {
+      console.error('Error uploading file:', uploadError);
+      throw new Error('Failed to upload file');
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('room-uploads')
+      .getPublicUrl(path);
+
+    fileUrl = publicUrl;
+    filePath = path;
+  }
+
+  // 2. Check message count for the current room_id
   const { count, error: countError } = await supabase
     .from('messages')
     .select('*', { count: 'exact', head: true })
@@ -77,22 +107,37 @@ export async function sendMessage(roomId: string, topic: string, content: string
 
   if (countError) {
     console.error('Error counting messages:', countError);
-    // Continue anyway, maybe just a glitch, but ideally we should handle it
   }
 
-  // 2. If count >= 500: Delete the oldest message in that room
+  // 3. FIFO Logic: If count >= 500, delete oldest messages AND their files
   if (count !== null && count >= 500) {
     const { data: oldestMessages, error: fetchError } = await supabase
       .from('messages')
-      .select('id')
+      .select('id, file_path')
       .eq('room_id', roomId)
       .order('created_at', { ascending: true })
-      .limit(count - 499); // Delete to get back to 499 or fewer
+      .limit(count - 499);
 
     if (fetchError) {
       console.error('Error fetching oldest messages:', fetchError);
     } else if (oldestMessages && oldestMessages.length > 0) {
-      const idsToDelete = oldestMessages.map(m => m.id);
+      // Delete files from storage first
+      const filesToDelete = oldestMessages
+        .map((m) => m.file_path)
+        .filter((path): path is string => path !== null);
+
+      if (filesToDelete.length > 0) {
+        const { error: storageDeleteError } = await supabase.storage
+          .from('room-uploads')
+          .remove(filesToDelete);
+
+        if (storageDeleteError) {
+          console.error('Error deleting old files:', storageDeleteError);
+        }
+      }
+
+      // Delete messages from DB
+      const idsToDelete = oldestMessages.map((m) => m.id);
       const { error: deleteError } = await supabase
         .from('messages')
         .delete()
@@ -104,10 +149,15 @@ export async function sendMessage(roomId: string, topic: string, content: string
     }
   }
 
-  // 3. Insert the new message
+  // 4. Insert the new message
   const { error: insertError } = await supabase
     .from('messages')
-    .insert([{ room_id: roomId, content: content }]);
+    .insert([{
+      room_id: roomId,
+      content: content || '',
+      file_url: fileUrl,
+      file_path: filePath
+    }]);
 
   if (insertError) {
     console.error('Error sending message:', insertError);
