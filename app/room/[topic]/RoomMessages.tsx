@@ -37,8 +37,10 @@ export default function RoomMessages({ initialMessages, roomId }: RoomMessagesPr
 
   // Sync state with props (e.g., after sending a message which triggers server revalidation)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMessages(initialMessages);
     messagesRef.current = initialMessages;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialMessages]);
 
   useEffect(() => {

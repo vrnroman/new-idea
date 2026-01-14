@@ -1,5 +1,5 @@
 import { sendMessage } from '@/app/actions';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import RoomMessages from './RoomMessages';
@@ -14,6 +14,7 @@ interface PageProps {
 export default async function RoomPage({ params }: PageProps) {
   const { topic } = await params;
   const decodedTopic = decodeURIComponent(topic);
+  const supabase = await createClient();
 
   // 1. Fetch Room Details
   const { data: room, error: roomError } = await supabase
