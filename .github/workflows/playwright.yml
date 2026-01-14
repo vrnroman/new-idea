@@ -1,0 +1,55 @@
+name: Playwright Tests
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
+    - uses: supabase/setup-cli@v1
+      with:
+        version: latest
+
+    - name: Start Supabase
+      run: supabase start
+
+    - name: Get Supabase Keys
+      id: supabase_keys
+      run: |
+        ANON_KEY=$(supabase status -o json | jq -r '.anon_key')
+        echo "::add-mask::$ANON_KEY"
+        echo "anon_key=$ANON_KEY" >> $GITHUB_OUTPUT
+
+    - name: Init Database
+      run: |
+        psql 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' -f schema.sql
+        psql 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' -f scripts/auth_migration.sql
+
+    - name: Run Playwright tests
+      run: npx playwright test
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ steps.supabase_keys.outputs.anon_key }}
+        DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
