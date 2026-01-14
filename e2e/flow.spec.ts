@@ -83,4 +83,7 @@ test('User flow: Login, Create Room, Leave, Join, Send Message', async ({ page }
   // Text files usually don't render inline unless configured.
   // Let's assume there is a link containing the filename.
   await expect(page.locator(`a[download="${fileName}"]`).or(page.locator(`text=${fileName}`))).toBeVisible();
+
+  // 9. Take Screenshot
+  await page.screenshot({ path: 'proof.png', fullPage: true });
 });
