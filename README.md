@@ -1,16 +1,16 @@
 # TextBin Rooms
 
-A lightweight, anonymous text-sharing application built with Next.js and Supabase.
+A private text-sharing application built with Next.js and Supabase.
 
 ## Features
 
-- **Anonymous Rooms**: Create rooms instantly with an optional topic.
-- **Auto-Cleanup**: The system maintains a maximum of 20 rooms. Oldest rooms are deleted automatically when new ones are created.
+- **Private Rooms**: Create rooms tied to your account. Only you can see them.
+- **Secure Authentication**: Email/Password login via Supabase Auth.
+- **Auto-Cleanup**: The system maintains a maximum of 20 rooms per user. Oldest rooms are deleted automatically when new ones are created.
 - **Message Limits**: Each room holds a maximum of 500 messages. Oldest messages are deleted automatically when new ones are sent.
-- **File Attachments**: Upload images and files with your messages. Images are displayed inline; other files are downloadable.
+- **File Attachments**: Upload images and files. Files are stored securely in private folders.
 - **Storage Cleanup**: File attachments are automatically deleted from storage when their associated messages are removed.
 - **Markdown Support**: Messages are rendered using Markdown.
-- **No Sign-up**: Completely anonymous and open.
 
 ## Setup
 
@@ -25,22 +25,19 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ### 2. Database Setup (Crucial)
 
-Since the app cannot create tables automatically for security reasons, you must set up the database schema once.
+You must apply the database schema and the authentication policies.
 
 **Option A: Automated Script (Recommended)**
 Get your "Transaction Mode" or "Session Mode" connection string from Supabase (Settings -> Database -> Connection String).
 
 ```bash
-# Run the setup script
+# Run the setup script (creates tables)
 node scripts/migrate.js
-# Paste your connection string when prompted
 ```
 
 **Option B: Manual Setup**
-1. Copy the contents of the `schema.sql` file in this repository.
-2. Go to your Supabase Dashboard -> **SQL Editor**.
-3. Paste the SQL and click **Run**.
-4. **Note**: The SQL script also configures the `room-uploads` Storage bucket and its public access policies.
+1. Copy the contents of `schema.sql` and run it in the Supabase SQL Editor.
+2. Copy the contents of `scripts/auth_migration.sql` and run it in the Supabase SQL Editor to enable Authentication and Row Level Security.
 
 ### 3. Run Locally
 
@@ -49,11 +46,12 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser.
+Open [http://localhost:3000](http://localhost:3000) with your browser. You will be redirected to `/login`.
 
 ## Tech Stack
 
 - **Framework**: Next.js (App Router)
 - **Database**: Supabase (PostgreSQL)
+- **Auth**: Supabase Native Auth
 - **Styling**: Tailwind CSS + @tailwindcss/typography
 - **Markdown**: react-markdown
