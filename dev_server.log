@@ -1,0 +1,11 @@
+
+> textbin-rooms@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+
+✓ Starting...
+✓ Ready in 3.4s
+ GET / 200 in 3.6s (compile: 3.2s, render: 442ms)
