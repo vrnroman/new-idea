@@ -96,9 +96,14 @@ export async function sendMessage(roomId: string, topic: string, formData: FormD
     // Path: private/{user_id}/{room_id}/{filename}
     const path = `private/${user.id}/${roomId}/${fileName}`;
 
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+
     const { error: uploadError } = await supabase.storage
       .from('room-uploads')
-      .upload(path, file);
+      .upload(path, fileBuffer, {
+        contentType: file.type,
+        upsert: false
+      });
 
     if (uploadError) {
       console.error('Error uploading file:', uploadError);
