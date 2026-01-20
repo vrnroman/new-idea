@@ -91,8 +91,8 @@ export async function sendMessage(roomId: string, topic: string, formData: FormD
 
   // 1. Handle File Upload
   if (file && file.size > 0) {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}-${sanitizedName}`;
     // Path: private/{user_id}/{room_id}/{filename}
     const path = `private/${user.id}/${roomId}/${fileName}`;
 
