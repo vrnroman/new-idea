@@ -78,7 +78,12 @@ export default async function RoomPage({ params }: PageProps) {
           />
           <div className="flex justify-between items-center">
             <label className="cursor-pointer text-gray-500 hover:text-blue-600 flex items-center gap-2">
-              <input type="file" name="file" className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/20 dark:file:text-blue-400" />
+              <input
+                type="file"
+                name="file"
+                accept="*/*"
+                className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/20 dark:file:text-blue-400"
+              />
             </label>
             <SubmitButton
               className="px-6 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-500"
